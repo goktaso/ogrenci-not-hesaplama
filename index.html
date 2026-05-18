@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öğrenci Not Hesaplama</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .upload-area {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+        }
+
+        .upload-area.loaded {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .loaded-message {
+            color: #155724;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .input-section {
+            display: none;
+        }
+
+        .input-section.active {
+            display: block;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .card-title {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .card.award-takdir {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .card.award-tesekkur {
+            background: linear-gradient(135deg, #f39c12, #f1c40f);
+        }
+
+        .card.award-none {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .card.award-takdir .card-title,
+        .card.award-takdir .card-value,
+        .card.award-tesekkur .card-title,
+        .card.award-tesekkur .card-value,
+        .card.award-none .card-title,
+        .card.award-none .card-value {
+            color: white;
+        }
+
+        .lessons-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .lessons-header {
+            background: #3498db;
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: grid;
+            grid-template-columns: 2fr 80px repeat(5, 100px) 100px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .lesson-row {
+            display: grid;
+            grid-template-columns: 2fr 80px repeat(5, 100px) 100px;
+            gap: 10px;
+            padding: 12px 20px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+
+        .lesson-row:last-child {
+            border-bottom: none;
+        }
+
+        .lesson-row:hover {
+            background: #f8f9fa;
+        }
+
+        .lesson-name {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .lesson-credit {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .grade-input {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .grade-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .grade-input.high { border-color: #27ae60; background: #d4edda; }
+        .grade-input.medium { border-color: #f39c12; background: #fff3cd; }
+        .grade-input.low { border-color: #e74c3c; background: #f8d7da; }
+
+        .lesson-average {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .avg-high { color: #27ae60; }
+        .avg-medium { color: #f39c12; }
+        .avg-low { color: #e74c3c; }
+
+        @media (max-width: 900px) {
+            .lessons-header, .lesson-row {
+                grid-template-columns: 1fr 60px repeat(5, 70px) 80px;
+                gap: 5px;
+                padding: 10px;
+            }
+            .grade-input { padding: 5px; font-size: 0.85rem; }
+            h1 { font-size: 1.5rem; }
+            .card-value { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Öğrenci Not Hesaplama Sistemi</h1>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text" id="uploadText">Excel dosyanızı sürükleyip bırakın</div>
+            <div class="upload-hint">veya dosya seçmek için tıklayın (Ders adları ve krediler için)</div>
+            <input type="file" id="fileInput" accept=".xlsx,.xls">
+        </div>
+
+        <div class="input-section" id="inputSection">
+            <div class="summary-cards">
+                <div class="card">
+                    <div class="card-title">Toplam Ders</div>
+                    <div class="card-value" id="totalLessons">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Toplam Kredi</div>
+                    <div class="card-value" id="totalCredits">0</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Genel Ortalama</div>
+                    <div class="card-value" id="overallAverage">0.00</div>
+                </div>
+                <div class="card" id="awardCard">
+                    <div class="card-title">Belge Durumu</div>
+                    <div class="card-value" id="awardStatus">-</div>
+                </div>
+            </div>
+
+            <div class="lessons-container">
+                <div class="lessons-header">
+                    <span>Ders Adı</span>
+                    <span>Kredi</span>
+                    <span>Yazılı 1</span>
+                    <span>Yazılı 2</span>
+                    <span>Etkinlik 1</span>
+                    <span>Etkinlik 2</span>
+                    <span>Etkinlik 3</span>
+                    <span>Ortalama</span>
+                </div>
+                <div id="lessonsBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const inputSection = document.getElementById('inputSection');
+        const lessonsBody = document.getElementById('lessonsBody');
+        
+        let lessons = [];
+
+        // Upload handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) loadExcel(file);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) loadExcel(file);
+        });
+
+        function loadExcel(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                parseLessons(jsonData);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function parseLessons(data) {
+            lessons = [];
+            
+            data.forEach(row => {
+                const lessonName = row['Ders Adı'] || row['Ders'] || '';
+                const credit = parseFloat(row['Kredi']) || 0;
+                
+                if (lessonName) {
+                    lessons.push({
+                        name: lessonName,
+                        credit: credit,
+                        grades: ['', '', '', '', '']
+                    });
+                }
+            });
+
+            if (lessons.length > 0) {
+                uploadArea.classList.add('loaded');
+                document.getElementById('uploadText').innerHTML = '<span class="loaded-message">✓ Excel yüklendi! ' + lessons.length + ' ders bulundu.</span>';
+                renderLessons();
+                inputSection.classList.add('active');
+                calculateOverallAverage();
+            }
+        }
+
+        function renderLessons() {
+            lessonsBody.innerHTML = '';
+            
+            lessons.forEach((lesson, index) => {
+                const row = document.createElement('div');
+                row.className = 'lesson-row';
+                row.innerHTML = `
+                    <span class="lesson-name">${lesson.name}</span>
+                    <span class="lesson-credit">${lesson.credit}</span>
+                    <input type="number" class="grade-input" placeholder="-" min="0" max="100" data-lesson="${index}" data-grade="0" value="${lesson.grades[0]}">
+                    <input type="number" class="grade-input" placeholder="-" min="0" max="100" data-lesson="${index}" data-grade="1" value="${lesson.grades[1]}">
+                    <input type="number" class="grade-input" placeholder="-" min="0" max="100" data-lesson="${index}" data-grade="2" value="${lesson.grades[2]}">
+                    <input type="number" class="grade-input" placeholder="-" min="0" max="100" data-lesson="${index}" data-grade="3" value="${lesson.grades[3]}">
+                    <input type="number" class="grade-input" placeholder="-" min="0" max="100" data-lesson="${index}" data-grade="4" value="${lesson.grades[4]}">
+                    <span class="lesson-average" id="avg-${index}">-</span>
+                `;
+                lessonsBody.appendChild(row);
+            });
+
+            // Add event listeners
+            document.querySelectorAll('.grade-input').forEach(input => {
+                input.addEventListener('input', handleGradeChange);
+            });
+
+            calculateAllAverages();
+        }
+
+        function handleGradeChange(e) {
+            const lessonIndex = parseInt(e.target.dataset.lesson);
+            const gradeIndex = parseInt(e.target.dataset.grade);
+            const value = e.target.value;
+
+            lessons[lessonIndex].grades[gradeIndex] = value;
+            
+            calculateLessonAverage(lessonIndex);
+            calculateOverallAverage();
+            updateInputColors(lessonIndex);
+        }
+
+        function calculateLessonAverage(index) {
+            const lesson = lessons[index];
+            const grades = lesson.grades.map(g => parseFloat(g) || 0).filter(g => g > 0);
+            
+            const avgElement = document.getElementById(`avg-${index}`);
+            
+            if (grades.length === 0) {
+                avgElement.textContent = '-';
+                avgElement.className = 'lesson-average';
+                return;
+            }
+
+            const average = grades.reduce((a, b) => a + b, 0) / grades.length;
+            avgElement.textContent = average.toFixed(2);
+            
+            if (average >= 85) {
+                avgElement.className = 'lesson-average avg-high';
+            } else if (average >= 70) {
+                avgElement.className = 'lesson-average avg-medium';
+            } else {
+                avgElement.className = 'lesson-average avg-low';
+            }
+        }
+
+        function updateInputColors(index) {
+            const inputs = document.querySelectorAll(`[data-lesson="${index}"]`);
+            const avgElement = document.getElementById(`avg-${index}`);
+            const avgClass = avgElement.className.replace('lesson-average ', '');
+            
+            inputs.forEach(input => {
+                input.className = 'grade-input';
+                if (avgClass === 'avg-high') input.classList.add('high');
+                else if (avgClass === 'avg-medium') input.classList.add('medium');
+                else if (avgClass === 'avg-low' && avgElement.textContent !== '-') input.classList.add('low');
+            });
+        }
+
+        function calculateAllAverages() {
+            lessons.forEach((_, index) => {
+                calculateLessonAverage(index);
+                updateInputColors(index);
+            });
+        }
+
+        function calculateOverallAverage() {
+            let totalCredits = 0;
+            let weightedSum = 0;
+
+            lessons.forEach(lesson => {
+                const grades = lesson.grades.map(g => parseFloat(g) || 0).filter(g => g > 0);
+                if (grades.length > 0) {
+                    const average = grades.reduce((a, b) => a + b, 0) / grades.length;
+                    totalCredits += lesson.credit;
+                    weightedSum += average * lesson.credit;
+                }
+            });
+
+            const overallAverage = totalCredits > 0 ? weightedSum / totalCredits : 0;
+
+            document.getElementById('totalLessons').textContent = lessons.length;
+            document.getElementById('totalCredits').textContent = totalCredits;
+            document.getElementById('overallAverage').textContent = overallAverage.toFixed(2);
+
+            const awardCard = document.getElementById('awardCard');
+            const awardStatus = document.getElementById('awardStatus');
+            
+            awardCard.className = 'card';
+            if (overallAverage >= 85) {
+                awardCard.classList.add('award-takdir');
+                awardStatus.textContent = '🎉 Takdir';
+            } else if (overallAverage >= 70) {
+                awardCard.classList.add('award-tesekkur');
+                awardStatus.textContent = '👏 Teşekkür';
+            } else if (overallAverage > 0) {
+                awardCard.classList.add('award-none');
+                awardStatus.textContent = '😔 Belge Yok';
+            } else {
+                awardStatus.textContent = '-';
+            }
+        }
+    </script>
+</body>
+</html>
