@@ -347,6 +347,79 @@
         .avg-medium { color: #f39c12; }
         .avg-low { color: #e74c3c; }
 
+        .celebration-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            opacity: 1;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotateZ(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotateZ(0deg) translateX(0); }
+            25% { transform: rotateZ(90deg) translateX(10px); }
+            50% { transform: rotateZ(180deg) translateX(0); }
+            75% { transform: rotateZ(270deg) translateX(-10px); }
+            100% { transform: rotateZ(360deg) translateX(0); }
+        }
+
+        .confetti.falling {
+            animation: fall 3s ease-in forwards;
+        }
+
+        .celebration-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(0,0,0,0.3);
+            z-index: 10000;
+            animation: popIn 0.5s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .award-takdir {
+            animation: bounce 0.6s ease-in-out 3 !important;
+        }
+
         @media (max-width: 900px) {
             .lessons-header, .lesson-row {
                 grid-template-columns: 1fr 60px repeat(5, 70px) 80px;
@@ -481,6 +554,8 @@
             </div>
         </div>
     </div>
+
+    <div class="celebration-container" id="celebrationContainer"></div>
 
     <script>
         const uploadArea = document.getElementById('uploadArea');
@@ -700,9 +775,11 @@
             if (overallAverage >= 85) {
                 awardCard.classList.add('award-takdir');
                 awardStatus.textContent = '🏆 Takdir';
+                triggerCelebration('takdir');
             } else if (overallAverage >= 70) {
                 awardCard.classList.add('award-tesekkur');
                 awardStatus.textContent = '🎖️ Teşekkür';
+                triggerCelebration('tesekkur');
             } else if (overallAverage > 0) {
                 awardCard.classList.add('award-none');
                 awardStatus.textContent = '❌ Belge Yok';
@@ -710,6 +787,59 @@
                 awardStatus.textContent = '-';
             }
         }
+
+        function triggerCelebration(type) {
+            const container = document.getElementById('celebrationContainer');
+            
+            if (type === 'takdir') {
+                createConfetti(50);
+                playSound('takdir');
+            } else if (type === 'tesekkur') {
+                createConfetti(30);
+                playSound('tesekkur');
+            }
+        }
+
+        function createConfetti(count) {
+            const container = document.getElementById('celebrationContainer');
+            const emojis = ['🎉', '🎊', '✨', '⭐', '🌟', '💫', '🎈', '🎁'];
+            
+            for (let i = 0; i < count; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti falling';
+                confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.fontSize = Math.random() * 20 + 20 + 'px';
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                confetti.style.animationDuration = Math.random() * 2 + 2.5 + 's';
+                
+                container.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 5000);
+            }
+        }
+
+        function playSound(type) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'takdir') {
+                oscillator.frequency.value = 800;
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } else if (type === 'tesekkur') {
+                oscillator.frequency.value = 600;
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            }
     </script>
 </body>
 </html>
