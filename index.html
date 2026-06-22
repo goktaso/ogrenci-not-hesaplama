@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>��renci Not Hesaplama</title>
+    <title>Öğrenci Not Hesaplama</title>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         * {
@@ -22,6 +22,144 @@
         .container {
             max-width: 1100px;
             margin: 0 auto;
+        }
+
+        .student-header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .school-logo {
+            width: 140px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.2);
+            padding: 5px;
+        }
+
+        .school-logo .logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-info h2 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            border-left: 4px solid #1e40af;
+            padding-left: 12px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e40af;
+        }
+
+        .photo-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .photo-container {
+            width: 140px;
+            height: 160px;
+            border: 2px dashed #1e40af;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f0f4ff;
+            position: relative;
+        }
+
+        .photo-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #1e40af;
+            font-size: 40px;
+            gap: 5px;
+        }
+
+        .photo-placeholder p {
+            font-size: 0.75rem;
+            color: #1e40af;
+            font-weight: 600;
+        }
+
+        .student-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-btn {
+            background: linear-gradient(135deg, #1e40af, #1e3a8a);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: center;
+        }
+
+        .photo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .photo-btn.remove-btn {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            padding: 8px 12px;
+            font-size: 0.8rem;
+        }
+
+        .photo-btn.remove-btn:hover {
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
         }
 
         h1 {
@@ -218,17 +356,93 @@
             .grade-input { padding: 5px; font-size: 0.85rem; }
             h1 { font-size: 1.5rem; }
             .card-value { font-size: 1.5rem; }
+
+            .student-header {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .school-logo {
+                width: 120px;
+                height: 70px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .photo-section {
+                flex-direction: row;
+                gap: 10px;
+            }
+
+            .photo-container {
+                width: 120px;
+                height: 140px;
+            }
+
+            .photo-btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>?? ��renci Not Hesaplama Sistemi</h1>
+        <div class="student-header">
+            <div class="school-logo">
+                <img src="logo.png" alt="Kent Koleji Logo" class="logo-img">
+            </div>
+            <div class="student-info">
+                <h2>Öğrenci Bilgileri</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Adı Soyadı:</span>
+                        <span class="info-value">Arda Göktaş</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Doğum Yılı:</span>
+                        <span class="info-value">2014</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Okul:</span>
+                        <span class="info-value">İzmir Kent Koleji</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Kampüs:</span>
+                        <span class="info-value">Gaziemir</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Sınıf:</span>
+                        <span class="info-value">6-C</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Öğrenci No:</span>
+                        <span class="info-value">270</span>
+                    </div>
+                </div>
+            </div>
+            <div class="photo-section">
+                <div class="photo-container" id="photoContainer">
+                    <div class="photo-placeholder" id="photoPlaceholder">
+                        <span>📷</span>
+                        <p>Fotoğraf Seç</p>
+                    </div>
+                    <img id="studentPhoto" class="student-photo" style="display: none;" alt="Öğrenci Fotoğrafı">
+                </div>
+                <label for="photoInput" class="photo-btn">Fotoğraf Yükle</label>
+                <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                <button id="removePhotoBtn" class="photo-btn remove-btn" style="display: none;">Sil</button>
+            </div>
+        </div>
+
+        <h1>📚 Öğrenci Not Hesaplama Sistemi</h1>
 
         <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">??</div>
-            <div class="upload-text" id="uploadText">Excel dosyan�z� s�r�kleyip b�rak�n</div>
-            <div class="upload-hint">veya dosya se�mek i�in t�klay�n (Ders adlar� ve krediler i�in)</div>
+            <div class="upload-icon">📁</div>
+            <div class="upload-text" id="uploadText">Excel dosyanızı sürükleyip bırakın</div>
+            <div class="upload-hint">veya dosya seçmek için tıklayın (Ders adları ve krediler için)</div>
             <input type="file" id="fileInput" accept=".xlsx,.xls">
         </div>
 
@@ -254,10 +468,10 @@
 
             <div class="lessons-container">
                 <div class="lessons-header">
-                    <span>Ders Ad�</span>
+                    <span>Ders Adı</span>
                     <span>Kredi</span>
-                    <span>Yaz�l� 1</span>
-                    <span>Yaz�l� 2</span>
+                    <span>Yazılı 1</span>
+                    <span>Yazılı 2</span>
                     <span>Etkinlik 1</span>
                     <span>Etkinlik 2</span>
                     <span>Etkinlik 3</span>
@@ -273,10 +487,50 @@
         const fileInput = document.getElementById('fileInput');
         const inputSection = document.getElementById('inputSection');
         const lessonsBody = document.getElementById('lessonsBody');
+        const photoInput = document.getElementById('photoInput');
+        const photoContainer = document.getElementById('photoContainer');
+        const photoPlaceholder = document.getElementById('photoPlaceholder');
+        const studentPhoto = document.getElementById('studentPhoto');
+        const removePhotoBtn = document.getElementById('removePhotoBtn');
         
         let lessons = [];
 
-        // Upload handlers
+        photoContainer.addEventListener('click', () => photoInput.click());
+
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    studentPhoto.src = event.target.result;
+                    studentPhoto.style.display = 'block';
+                    photoPlaceholder.style.display = 'none';
+                    removePhotoBtn.style.display = 'block';
+                    localStorage.setItem('studentPhoto', event.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removePhotoBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            studentPhoto.style.display = 'none';
+            photoPlaceholder.style.display = 'flex';
+            removePhotoBtn.style.display = 'none';
+            photoInput.value = '';
+            localStorage.removeItem('studentPhoto');
+        });
+
+        window.addEventListener('load', () => {
+            const savedPhoto = localStorage.getItem('studentPhoto');
+            if (savedPhoto) {
+                studentPhoto.src = savedPhoto;
+                studentPhoto.style.display = 'block';
+                photoPlaceholder.style.display = 'none';
+                removePhotoBtn.style.display = 'block';
+            }
+        });
+
         uploadArea.addEventListener('click', () => fileInput.click());
 
         uploadArea.addEventListener('dragover', (e) => {
@@ -317,7 +571,7 @@
             lessons = [];
             
             data.forEach(row => {
-                const lessonName = row['Ders Ad�'] || row['Ders'] || '';
+                const lessonName = row['Ders Adı'] || row['Ders'] || '';
                 const credit = parseFloat(row['Kredi']) || 0;
                 
                 if (lessonName) {
@@ -331,7 +585,7 @@
 
             if (lessons.length > 0) {
                 uploadArea.classList.add('loaded');
-                document.getElementById('uploadText').innerHTML = '<span class="loaded-message">? Excel y�klendi! ' + lessons.length + ' ders bulundu.</span>';
+                document.getElementById('uploadText').innerHTML = '<span class="loaded-message">✓ Excel yüklendi! ' + lessons.length + ' ders bulundu.</span>';
                 renderLessons();
                 inputSection.classList.add('active');
                 calculateOverallAverage();
@@ -357,7 +611,6 @@
                 lessonsBody.appendChild(row);
             });
 
-            // Add event listeners
             document.querySelectorAll('.grade-input').forEach(input => {
                 input.addEventListener('input', handleGradeChange);
             });
@@ -446,13 +699,13 @@
             awardCard.className = 'card';
             if (overallAverage >= 85) {
                 awardCard.classList.add('award-takdir');
-                awardStatus.textContent = '?? Takdir';
+                awardStatus.textContent = '🏆 Takdir';
             } else if (overallAverage >= 70) {
                 awardCard.classList.add('award-tesekkur');
-                awardStatus.textContent = '?? Te�ekk�r';
+                awardStatus.textContent = '🎖️ Teşekkür';
             } else if (overallAverage > 0) {
                 awardCard.classList.add('award-none');
-                awardStatus.textContent = '?? Belge Yok';
+                awardStatus.textContent = '❌ Belge Yok';
             } else {
                 awardStatus.textContent = '-';
             }
@@ -460,8 +713,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
